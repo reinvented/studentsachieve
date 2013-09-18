@@ -20,5 +20,6 @@ The included script **get-teacher-vcard.php** will login, retrieve teachers and 
 
 	php get-teacher-vcard.php username password
 	
-Where "username" and "password" are the parent access username and password assigned to you by your child's school administration.
+Where "username" and "password" are the parent access username and password assigned to you by your child's school administration. 
 
+The result will be a file named **[schoolname].vcf** that you can then load into any address book application that will import vCards.
