@@ -17,7 +17,7 @@
   * Requirements: 
   *  - PHP (http://www.php.net) with cURL support
   * 
-  * @version 0.1, 18 September 2013
+  * @version 0.2, 20 September 2013
   * @author Peter Rukavina <peter@rukavina.net> 
   * @copyright Reinvented Inc., 2013
   * @license http://www.fsf.org/licensing/licenses/gpl.txt GNU Public License
@@ -31,11 +31,12 @@ class StudentsAchieve {
       * @param string $password your StudentsAchieve parent password
       */
     function __construct($username,$password) {
-        $this->username     = $username;
-        $this->password     = $password;
-        $this->homepage		= "https://sas.edu.pe.ca/SASPublicWeb/";
-        $this->loginform	= "https://sas.edu.pe.ca/SASPublicWeb/Forms/Login/Login.aspx?Logout=true";
-        $this->summarypage	= "https://sas.edu.pe.ca/SASPublicWeb/Pages/Entities/Summary/ViewStudentSummaryData.aspx";
+        $this->username     	= $username;
+        $this->password     	= $password;
+        $this->homepage			= "https://sas.edu.pe.ca/SASPublicWeb/";
+        $this->loginform		= "https://sas.edu.pe.ca/SASPublicWeb/Forms/Login/Login.aspx?Logout=true";
+        $this->summarypage		= "https://sas.edu.pe.ca/SASPublicWeb/Pages/Entities/Summary/ViewStudentSummaryData.aspx";
+		$this->attendancepage	= "https://sas.edu.pe.ca/SASPublicWeb/Pages/Entities/EventCalendar/StudentAttendanceEventSummaryDetail.aspx";
 	}
 
     /**
@@ -123,4 +124,71 @@ class StudentsAchieve {
 			$this->teachers->emails[$key] = $matches[2][0];
 		}
 	}
+
+    /**
+      * Retrieve attendance data for a single date.
+      * @param string $date the date, in any form that strtotime can parse
+      */
+	function getSingleAttendance($date) {
+	
+		if (!$date) {
+			$date = strftime("%m/%d/%Y");
+		}
+		else {
+			$date = strftime("%m/%d/%Y",strtotime($date));
+		}
+		
+		$attendanceurl = $this->attendancepage . "?SELECTED_DATE=" . $date;
+		$ch = curl_init(); 
+		curl_setopt($ch, CURLOPT_URL, $attendanceurl); 
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); 
+		curl_setopt($ch, CURLOPT_COOKIEFILE, "/tmp/studentsachieve-cookies.txt"); 
+		curl_setopt($ch, CURLOPT_COOKIEJAR,  "/tmp/studentsachieve-cookies.txt"); 
+		$result = curl_exec($ch); 		
+
+		$regex = '/\\<i\\>(.{0,})\\<\/i\\>/';
+		preg_match_all($regex, $result, $matches);
+		$this->attendance[$date]->times = $this->trimStrings($matches[1]);
+		
+		$regex = '/"\\>(.{0,})\\n.{0,}\\<\/a\\>/';
+		preg_match_all($regex, $result, $matches);
+		$this->attendance[$date]->classes = $this->trimStrings($matches[1]);
+		
+		$regex = '/\\<font\\ style=\'.{0,}?\'\\ face=\'Arial,\\ Fixed\'\\ size=\'2\'\\>\\n(.{0,})\\n.{0,}\\<\/font\\>/';
+		preg_match_all($regex, $result, $matches);
+		$this->attendance[$date]->status = $this->trimStrings($matches[1]);
+		
+	}
+
+    /**
+      * Retrieve attendance data for all weekdays in range of dates.
+      * @param string $datefrom the start date, in any form that strtotime can parse
+      * @param string $dateto the end date, in any form that strtotime can parse
+      */
+	function getMultiAttendance($datefrom,$dateto) {
+		$datefrom = strtotime($datefrom);
+		$dateto = strtotime($dateto);
+		
+		for ($date = $datefrom ; $date <= $dateto ; $date += 86400) {
+			$dow = intval(strftime("N",$date));
+			if ($dow <= 5) {
+				$this->getSingleAttendance(strftime("%Y-%m-%d",$date));
+			}
+		}
+	
+	}
+
+    /**
+      * Given an array of strings, trim all values and remove HTML.
+      * @param array $target array to process the values of
+      */	
+	function trimStrings($target) {
+		foreach ($target as $key => $value) {
+			$value = str_replace("&nbsp;"," ",$value);
+			$target[$key] = trim(strip_tags(html_entity_decode($value)));
+		}
+		return $target;
+	}
+	
 } 

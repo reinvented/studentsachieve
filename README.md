@@ -7,7 +7,7 @@ This is the beginnings of a PHP class for interacting with the [StudentsAchieve 
 
 *This code is an independent open source software project not affiliated with StudentsAchieve Software.*
 
-The code is early in development and is limited in function. Right now you can use it simply to automate a login to StudentsAchieve and retrieve a list of your child's classes and teachers and their email addresses.
+The code is early in development and is limited in function. Right now you can use it simply to automate a login to StudentsAchieve, retrieve a list of your child's classes and teachers and their email addresses, and retrieve attendance data for a range of dates.
 
 ### Limitations
 
@@ -16,10 +16,22 @@ The code is early in development and is limited in function. Right now you can u
 
 ### Sample Code
 
-The included script **get-teacher-vcard.php** will login, retrieve teachers and classes and email addresses and create a vCard file suitable for important into an "address book" or "contacts" application. To run this test from the command line:
+#### get-teacher-vcard.php
+
+The script **get-teacher-vcard.php** will login, retrieve teachers and classes and email addresses and create a vCard file suitable for important into an "address book" or "contacts" application. To run this test from the command line:
 
 	php get-teacher-vcard.php username password
 	
 Where "username" and "password" are the parent access username and password assigned to you by your child's school administration. 
 
 The result will be a file named **[schoolname].vcf** that you can then load into any address book application that will import vCards.
+
+#### get-attendance-ical.php
+
+The script **get-attendance-ical.php** will login, retrieve attendance data for a range of dates and create an iCalendar file suitable for important into a calendar application:
+
+	php get-attendance-ical.php username password
+	
+Where "username" and "password" are the parent access username and password assigned to you by your child's school administration. 
+
+The result will be a file named **[schoolname].ics** that you can then load into any calendar application that will import iCalendar files.
