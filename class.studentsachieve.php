@@ -171,7 +171,8 @@ class StudentsAchieve {
 		$dateto = strtotime($dateto);
 		
 		for ($date = $datefrom ; $date <= $dateto ; $date += 86400) {
-			$dow = intval(strftime("N",$date));
+			$dow = intval(strftime("%u",$date));
+			print $dow . "-" . $date . "\n";
 			if ($dow <= 5) {
 				$this->getSingleAttendance(strftime("%Y-%m-%d",$date));
 			}
